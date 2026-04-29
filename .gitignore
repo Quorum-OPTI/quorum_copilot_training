@@ -32,3 +32,6 @@ frontend/vite.config.d.ts
 frontend/vite.config.js
 frontend/vitest.config.d.ts
 frontend/vitest.config.js
+
+# reference
+reference/
