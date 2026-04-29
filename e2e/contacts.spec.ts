@@ -48,3 +48,23 @@ test("contacts CRUD happy path", async ({ page }) => {
   await expect(page).toHaveURL("/contacts");
   await expect(page.getByText(/no contacts yet/i)).toBeVisible();
 });
+
+test("contacts are isolated per user", async ({ page }) => {
+  // User A creates a contact
+  await signUpFresh(page, "iso-a");
+  await page.goto("/contacts/new");
+  await page.getByLabel(/name/i).fill("Private to A");
+  await page.getByRole("button", { name: /create/i }).click();
+  await expect(page.getByRole("heading", { name: "Private to A" })).toBeVisible();
+
+  // User A logs out
+  await page.goto("/");
+  await page.getByRole("button", { name: /log out/i }).click();
+  await expect(page).toHaveURL("/login");
+
+  // User B signs up fresh and goes to contacts
+  await signUpFresh(page, "iso-b");
+  await page.goto("/contacts");
+  await expect(page.getByText(/no contacts yet/i)).toBeVisible();
+  await expect(page.getByText("Private to A")).not.toBeVisible();
+});
