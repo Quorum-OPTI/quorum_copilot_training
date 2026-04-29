@@ -43,3 +43,59 @@ describe("GET /api/contacts", () => {
     expect(res.body).toEqual({ contacts: [] });
   });
 });
+
+describe("POST /api/contacts", () => {
+  let alice: TestUser;
+  beforeEach(async () => { alice = await createTestUser(app, "alice"); });
+  afterEach(async () => { await alice.cleanup(); });
+
+  it("returns 401 when unauthenticated", async () => {
+    const res = await request(app).post("/api/contacts").send({ name: "Z" });
+    expect(res.status).toBe(401);
+  });
+
+  it("creates a contact owned by the current user and returns it", async () => {
+    const res = await request(app)
+      .post("/api/contacts")
+      .set("Cookie", alice.cookie)
+      .send({ name: "Charlie", email: "charlie@example.com", phone: "555" });
+
+    expect(res.status).toBe(201);
+    expect(res.body.contact).toMatchObject({
+      name: "Charlie",
+      email: "charlie@example.com",
+      phone: "555",
+      userId: alice.userId,
+    });
+    expect(res.body.contact.id).toBeTypeOf("string");
+  });
+
+  it("rejects a missing name with 400 and a ValidationError", async () => {
+    const res = await request(app)
+      .post("/api/contacts")
+      .set("Cookie", alice.cookie)
+      .send({ email: "x@y.com" });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("ValidationError");
+    expect(Array.isArray(res.body.issues)).toBe(true);
+  });
+
+  it("rejects a malformed email with 400", async () => {
+    const res = await request(app)
+      .post("/api/contacts")
+      .set("Cookie", alice.cookie)
+      .send({ name: "Charlie", email: "not-an-email" });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("ValidationError");
+  });
+
+  it("treats an empty-string email/phone as not provided", async () => {
+    const res = await request(app)
+      .post("/api/contacts")
+      .set("Cookie", alice.cookie)
+      .send({ name: "Charlie", email: "", phone: "" });
+    expect(res.status).toBe(201);
+    expect(res.body.contact.email).toBeNull();
+    expect(res.body.contact.phone).toBeNull();
+  });
+});
