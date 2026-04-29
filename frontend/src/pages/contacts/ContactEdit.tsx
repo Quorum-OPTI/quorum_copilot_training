@@ -31,6 +31,7 @@ export default function ContactEdit() {
     }
   }
 
+  if (error && contact === null) return <div className="p-8 text-destructive">{error}</div>;
   if (contact === null) return <div className="p-8">Loading…</div>;
   if (contact === "not-found") {
     return (
