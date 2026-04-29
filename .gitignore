@@ -23,3 +23,12 @@ npm-debug.log*
 playwright-report/
 test-results/
 coverage/
+
+# TS incremental build cache
+*.tsbuildinfo
+
+# vite/vitest composite tsconfig emits — generated, not tracked
+frontend/vite.config.d.ts
+frontend/vite.config.js
+frontend/vitest.config.d.ts
+frontend/vitest.config.js
