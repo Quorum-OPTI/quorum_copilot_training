@@ -189,3 +189,37 @@ describe("PATCH /api/contacts/:id", () => {
     expect(fresh?.name).toBe("Bob's friend");
   });
 });
+
+describe("DELETE /api/contacts/:id", () => {
+  let alice: TestUser;
+  let bob: TestUser;
+  beforeEach(async () => {
+    alice = await createTestUser(app, "alice");
+    bob = await createTestUser(app, "bob");
+  });
+  afterEach(async () => {
+    await alice.cleanup();
+    await bob.cleanup();
+  });
+
+  it("deletes the contact when owned", async () => {
+    const c = await prisma.contact.create({ data: { userId: alice.userId, name: "Zoe" } });
+    const res = await request(app).delete(`/api/contacts/${c.id}`).set("Cookie", alice.cookie);
+    expect(res.status).toBe(204);
+    const after = await prisma.contact.findUnique({ where: { id: c.id } });
+    expect(after).toBeNull();
+  });
+
+  it("returns 404 when the id belongs to another user and does NOT delete it", async () => {
+    const c = await prisma.contact.create({ data: { userId: bob.userId, name: "Bob's friend" } });
+    const res = await request(app).delete(`/api/contacts/${c.id}`).set("Cookie", alice.cookie);
+    expect(res.status).toBe(404);
+    const after = await prisma.contact.findUnique({ where: { id: c.id } });
+    expect(after).not.toBeNull();
+  });
+
+  it("returns 404 when the id does not exist", async () => {
+    const res = await request(app).delete("/api/contacts/nonexistent-id").set("Cookie", alice.cookie);
+    expect(res.status).toBe(404);
+  });
+});

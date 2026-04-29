@@ -64,3 +64,14 @@ contactsRouter.patch("/:id", async (req: AuthedRequest, res) => {
   const contact = await prisma.contact.findUnique({ where: { id: req.params.id } });
   res.json({ contact });
 });
+
+contactsRouter.delete("/:id", async (req: AuthedRequest, res) => {
+  const result = await prisma.contact.deleteMany({
+    where: { id: req.params.id, userId: req.user!.id },
+  });
+  if (result.count === 0) {
+    res.status(404).json({ error: "NotFound" });
+    return;
+  }
+  res.status(204).end();
+});
