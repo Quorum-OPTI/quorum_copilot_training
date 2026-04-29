@@ -99,3 +99,39 @@ describe("POST /api/contacts", () => {
     expect(res.body.contact.phone).toBeNull();
   });
 });
+
+describe("GET /api/contacts/:id", () => {
+  let alice: TestUser;
+  let bob: TestUser;
+  beforeEach(async () => {
+    alice = await createTestUser(app, "alice");
+    bob = await createTestUser(app, "bob");
+  });
+  afterEach(async () => {
+    await alice.cleanup();
+    await bob.cleanup();
+  });
+
+  it("returns 401 when unauthenticated", async () => {
+    const res = await request(app).get("/api/contacts/some-id");
+    expect(res.status).toBe(401);
+  });
+
+  it("returns the contact when owned by the current user", async () => {
+    const c = await prisma.contact.create({ data: { userId: alice.userId, name: "Zoe" } });
+    const res = await request(app).get(`/api/contacts/${c.id}`).set("Cookie", alice.cookie);
+    expect(res.status).toBe(200);
+    expect(res.body.contact.id).toBe(c.id);
+  });
+
+  it("returns 404 when the id does not exist", async () => {
+    const res = await request(app).get("/api/contacts/nonexistent-id").set("Cookie", alice.cookie);
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 404 (not 403) when the id belongs to another user", async () => {
+    const c = await prisma.contact.create({ data: { userId: bob.userId, name: "Bob's friend" } });
+    const res = await request(app).get(`/api/contacts/${c.id}`).set("Cookie", alice.cookie);
+    expect(res.status).toBe(404);
+  });
+});

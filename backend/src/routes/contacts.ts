@@ -31,3 +31,14 @@ contactsRouter.post("/", async (req: AuthedRequest, res) => {
   });
   res.status(201).json({ contact });
 });
+
+contactsRouter.get("/:id", async (req: AuthedRequest, res) => {
+  const contact = await prisma.contact.findFirst({
+    where: { id: req.params.id, userId: req.user!.id },
+  });
+  if (!contact) {
+    res.status(404).json({ error: "NotFound" });
+    return;
+  }
+  res.json({ contact });
+});
