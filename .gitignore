@@ -1,1 +1,34 @@
+node_modules/
+dist/
+build/
+.next/
+.vite/
+
+# env files
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# editor
 .serena/
+
+# test artifacts
+playwright-report/
+test-results/
+coverage/
+
+# TS incremental build cache
+*.tsbuildinfo
+
+# vite/vitest composite tsconfig emits — generated, not tracked
+frontend/vite.config.d.ts
+frontend/vite.config.js
+frontend/vitest.config.d.ts
+frontend/vitest.config.js
