@@ -212,7 +212,7 @@ Only the tables Better Auth requires:
 - `User` (id, name, email, emailVerified, image, createdAt, updatedAt)
 - `Session` (id, userId, token, expiresAt, ipAddress, userAgent)
 - `Account` (id, userId, providerId, accountId, password, …)
-- `Verification` (id, identifier, value, expiresAt)
+- `Verification` (id, identifier, value, expiresAt, createdAt, updatedAt)
 
 Exact column names match Better Auth's Prisma adapter expectations. Initial migration is generated with `prisma migrate dev --name init` and committed.
 
@@ -233,7 +233,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U copilot"]
+      test: ["CMD-SHELL", "pg_isready -U copilot -d copilot_training"]
       interval: 2s
       timeout: 2s
       retries: 20

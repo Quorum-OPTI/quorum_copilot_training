@@ -236,6 +236,8 @@ Expected: `Container copilot_training_postgres Started`. No errors.
 Run: `docker compose ps`
 Expected: `postgres` service shows status `running` and health `healthy` (after a few seconds).
 
+> Note: a follow-up cleanup commit later in the branch added `*.tsbuildinfo` plus `frontend/vite*.config.{d.ts,js}` to `.gitignore` because Vite's composite tsconfig emits land next to source files. Future re-runs of this plan should bake those entries into Step 3's gitignore from the start.
+
 - [ ] **Step 5: Commit**
 
 ```bash
@@ -782,7 +784,8 @@ export function createApp(): Express {
   app.use(cookieParser());
 
   // Better Auth must be mounted BEFORE express.json() so it can read raw bodies.
-  app.all("/api/auth/*", toNodeHandler(auth));
+  // Express 5 requires a named wildcard parameter — bare `*` throws at boot.
+  app.all("/api/auth/*splat", toNodeHandler(auth));
 
   app.use(express.json());
 
@@ -1513,9 +1516,9 @@ export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes
 CardContent.displayName = "CardContent";
 ```
 
-- [ ] **Step 10: Create `frontend/src/components/ui/form.tsx`**
+- [ ] **Step 10: Create `frontend/src/components/ui/form.tsx` (exact)**
 
-A minimal form helper layered on react-hook-form. Keeps to the pieces login/signup actually use.
+A small form helper layered on react-hook-form. Wires per-field IDs through a context so `FormLabel.htmlFor` matches `Input.id`, which is required for accessible labelling and for testing-library's `getByLabelText` to find inputs.
 
 ```tsx
 import * as React from "react";
@@ -1532,11 +1535,25 @@ import { Label } from "./label";
 
 export const Form = FormProvider;
 
+type FormFieldContextValue = { id: string; name: string };
+const FormFieldContext = React.createContext<FormFieldContextValue | null>(null);
+
+function useFormField() {
+  const ctx = React.useContext(FormFieldContext);
+  if (!ctx) throw new Error("useFormField must be used inside a FormField");
+  return ctx;
+}
+
 export function FormField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >(props: ControllerProps<TFieldValues, TName>) {
-  return <Controller {...props} />;
+  const id = React.useId();
+  return (
+    <FormFieldContext.Provider value={{ id, name: props.name }}>
+      <Controller {...props} />
+    </FormFieldContext.Provider>
+  );
 }
 
 export const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -1546,15 +1563,32 @@ export const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HT
 );
 FormItem.displayName = "FormItem";
 
-export function FormLabel({ children, ...props }: React.HTMLAttributes<HTMLLabelElement>) {
-  return <Label {...props}>{children}</Label>;
-}
+export const FormLabel = React.forwardRef<
+  HTMLLabelElement,
+  React.LabelHTMLAttributes<HTMLLabelElement>
+>(({ ...props }, ref) => {
+  const { id } = useFormField();
+  return <Label ref={ref} htmlFor={id} {...props} />;
+});
+FormLabel.displayName = "FormLabel";
 
-export function FormMessage({ name }: { name: string }) {
+export const FormControl = React.forwardRef<
+  HTMLElement,
+  { children: React.ReactElement<Record<string, unknown>> }
+>(({ children }, _ref) => {
+  const { id } = useFormField();
+  return React.cloneElement(children, { id });
+});
+FormControl.displayName = "FormControl";
+
+export function FormMessage({ name }: { name?: string }) {
+  const ctx = React.useContext(FormFieldContext);
+  const fieldName = name ?? ctx?.name;
   const {
     formState: { errors },
   } = useFormContext();
-  const error = name.split(".").reduce<unknown>(
+  if (!fieldName) return null;
+  const error = fieldName.split(".").reduce<unknown>(
     (acc, key) => (acc && typeof acc === "object" ? (acc as Record<string, unknown>)[key] : undefined),
     errors,
   );
@@ -1654,7 +1688,7 @@ import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -1693,8 +1727,10 @@ export default function LoginPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
-                    <Input type="email" autoComplete="email" {...field} />
-                    <FormMessage name="email" />
+                    <FormControl>
+                      <Input type="email" autoComplete="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -1704,8 +1740,10 @@ export default function LoginPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
-                    <Input type="password" autoComplete="current-password" {...field} />
-                    <FormMessage name="password" />
+                    <FormControl>
+                      <Input type="password" autoComplete="current-password" {...field} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -1738,7 +1776,7 @@ import { signUp } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -1782,8 +1820,10 @@ export default function SignupPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Name</FormLabel>
-                    <Input autoComplete="name" {...field} />
-                    <FormMessage name="name" />
+                    <FormControl>
+                      <Input autoComplete="name" {...field} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -1793,8 +1833,10 @@ export default function SignupPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
-                    <Input type="email" autoComplete="email" {...field} />
-                    <FormMessage name="email" />
+                    <FormControl>
+                      <Input type="email" autoComplete="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -1804,8 +1846,10 @@ export default function SignupPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
-                    <Input type="password" autoComplete="new-password" {...field} />
-                    <FormMessage name="password" />
+                    <FormControl>
+                      <Input type="password" autoComplete="new-password" {...field} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />

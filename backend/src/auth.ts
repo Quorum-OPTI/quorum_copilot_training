@@ -16,6 +16,8 @@ export const auth = betterAuth({
   advanced: {
     cookies: {
       session_token: {
+        // DEV ONLY: secure=false because dev runs over plain HTTP via Vite proxy.
+        // For real deployment over HTTPS, flip to `secure: true` (or branch on NODE_ENV).
         attributes: { sameSite: "lax", httpOnly: true, secure: false },
       },
     },
