@@ -135,3 +135,57 @@ describe("GET /api/contacts/:id", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("PATCH /api/contacts/:id", () => {
+  let alice: TestUser;
+  let bob: TestUser;
+  beforeEach(async () => {
+    alice = await createTestUser(app, "alice");
+    bob = await createTestUser(app, "bob");
+  });
+  afterEach(async () => {
+    await alice.cleanup();
+    await bob.cleanup();
+  });
+
+  it("updates the named fields and leaves others alone", async () => {
+    const c = await prisma.contact.create({
+      data: { userId: alice.userId, name: "Zoe", email: "zoe@example.com", phone: "555" },
+    });
+    const res = await request(app)
+      .patch(`/api/contacts/${c.id}`)
+      .set("Cookie", alice.cookie)
+      .send({ phone: "999" });
+    expect(res.status).toBe(200);
+    expect(res.body.contact).toMatchObject({ name: "Zoe", email: "zoe@example.com", phone: "999" });
+  });
+
+  it("rejects a malformed email with 400", async () => {
+    const c = await prisma.contact.create({ data: { userId: alice.userId, name: "Zoe" } });
+    const res = await request(app)
+      .patch(`/api/contacts/${c.id}`)
+      .set("Cookie", alice.cookie)
+      .send({ email: "not-an-email" });
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects clearing name to empty string with 400", async () => {
+    const c = await prisma.contact.create({ data: { userId: alice.userId, name: "Zoe" } });
+    const res = await request(app)
+      .patch(`/api/contacts/${c.id}`)
+      .set("Cookie", alice.cookie)
+      .send({ name: "" });
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 404 when the id belongs to another user", async () => {
+    const c = await prisma.contact.create({ data: { userId: bob.userId, name: "Bob's friend" } });
+    const res = await request(app)
+      .patch(`/api/contacts/${c.id}`)
+      .set("Cookie", alice.cookie)
+      .send({ name: "Hijacked" });
+    expect(res.status).toBe(404);
+    const fresh = await prisma.contact.findUnique({ where: { id: c.id } });
+    expect(fresh?.name).toBe("Bob's friend");
+  });
+});
