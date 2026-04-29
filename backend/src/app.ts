@@ -6,6 +6,7 @@ import { auth } from "./auth.js";
 import { env } from "./env.js";
 import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
+import { contactsRouter } from "./routes/contacts.js";
 
 export function createApp(): Express {
   const app = express();
@@ -26,6 +27,7 @@ export function createApp(): Express {
 
   app.use("/health", healthRouter);
   app.use("/api/me", meRouter);
+  app.use("/api/contacts", contactsRouter);
 
   return app;
 }
