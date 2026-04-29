@@ -26,6 +26,10 @@ describe("createContactSchema", () => {
     // The schema should accept that and treat it as absent.
     const r = createContactSchema.safeParse({ name: "Alice", email: "", phone: "" });
     expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.email).toBeUndefined();
+      expect(r.data.phone).toBeUndefined();
+    }
   });
 });
 

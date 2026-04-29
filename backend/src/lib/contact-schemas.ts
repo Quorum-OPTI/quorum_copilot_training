@@ -7,12 +7,9 @@ const optionalString = z
   .optional();
 
 const optionalEmail = z
-  .string()
-  .transform((v) => (v === "" ? undefined : v))
+  .union([z.literal(""), z.string().email("Must be a valid email")])
   .optional()
-  .refine((v) => v === undefined || z.string().email().safeParse(v).success, {
-    message: "Must be a valid email",
-  });
+  .transform((v) => (v === "" ? undefined : v));
 
 export const createContactSchema = z.object({
   name: z.string().min(1, "Name is required"),
