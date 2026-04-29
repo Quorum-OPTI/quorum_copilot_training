@@ -20,7 +20,7 @@ export default function ContactNew() {
 
   return (
     <div className="mx-auto max-w-md p-8 space-y-6">
-      <h1 className="text-2xl font-semibold">New contact</h1>
+      <h1 className="text-3xl font-bold tracking-tight">New contact</h1>
       <ContactForm onSubmit={onSubmit} submitLabel="Create" serverError={serverError} />
     </div>
   );

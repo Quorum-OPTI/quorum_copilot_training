@@ -37,14 +37,14 @@ export default function ContactEdit() {
     return (
       <div className="mx-auto max-w-md p-8 space-y-4">
         <p>Contact not found.</p>
-        <Link className="underline" to="/contacts">Back to contacts</Link>
+        <Link className="font-medium text-primary underline underline-offset-2" to="/contacts">Back to contacts</Link>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-md p-8 space-y-6">
-      <h1 className="text-2xl font-semibold">Edit contact</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Edit contact</h1>
       <ContactForm
         initialValues={{
           name: contact.name,

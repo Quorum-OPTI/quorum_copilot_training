@@ -36,14 +36,14 @@ export default function ContactDetail() {
     return (
       <div className="mx-auto max-w-md p-8 space-y-4">
         <p>Contact not found.</p>
-        <Link className="underline" to="/contacts">Back to contacts</Link>
+        <Link className="font-medium text-primary underline underline-offset-2" to="/contacts">Back to contacts</Link>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-md p-8 space-y-6">
-      <h1 className="text-2xl font-semibold">{contact.name}</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{contact.name}</h1>
       <dl className="space-y-2">
         <div>
           <dt className="text-sm text-muted-foreground">Email</dt>
