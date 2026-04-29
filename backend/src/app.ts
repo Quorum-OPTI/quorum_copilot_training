@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth.js";
 import { env } from "./env.js";
 import { healthRouter } from "./routes/health.js";
+import { meRouter } from "./routes/me.js";
 
 export function createApp(): Express {
   const app = express();
@@ -24,6 +25,7 @@ export function createApp(): Express {
   app.use(express.json());
 
   app.use("/health", healthRouter);
+  app.use("/api/me", meRouter);
 
   return app;
 }
