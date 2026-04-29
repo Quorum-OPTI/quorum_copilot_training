@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: copilot_training_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: copilot
+      POSTGRES_PASSWORD: copilot
+      POSTGRES_DB: copilot_training
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U copilot -d copilot_training"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+volumes:
+  postgres_data:

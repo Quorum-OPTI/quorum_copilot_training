@@ -1,1 +1,25 @@
+node_modules/
+dist/
+build/
+.next/
+.vite/
+
+# env files
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# editor
 .serena/
+
+# test artifacts
+playwright-report/
+test-results/
+coverage/
