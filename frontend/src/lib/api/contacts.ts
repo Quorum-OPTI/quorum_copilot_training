@@ -14,7 +14,10 @@ async function request<T>(
 ): Promise<T> {
   const res = await fetch(url, {
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...(init.headers ?? {}) },
+    headers: {
+      ...(init.body !== undefined && { "Content-Type": "application/json" }),
+      ...(init.headers ?? {}),
+    },
     ...init,
   });
   if (res.status === 204) return undefined as T;
