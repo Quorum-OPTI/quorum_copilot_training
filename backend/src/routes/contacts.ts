@@ -61,7 +61,13 @@ contactsRouter.patch("/:id", async (req: AuthedRequest, res) => {
     res.status(404).json({ error: "NotFound" });
     return;
   }
-  const contact = await prisma.contact.findUnique({ where: { id: req.params.id } });
+  const contact = await prisma.contact.findFirst({
+    where: { id: req.params.id, userId: req.user!.id },
+  });
+  if (!contact) {
+    res.status(404).json({ error: "NotFound" });
+    return;
+  }
   res.json({ contact });
 });
 

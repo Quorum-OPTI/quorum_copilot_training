@@ -16,8 +16,7 @@ describe("GET /api/contacts", () => {
   });
 
   afterEach(async () => {
-    await alice.cleanup();
-    await bob.cleanup();
+    await Promise.allSettled([alice.cleanup(), bob.cleanup()]);
   });
 
   it("returns 401 when unauthenticated", async () => {
@@ -108,8 +107,7 @@ describe("GET /api/contacts/:id", () => {
     bob = await createTestUser(app, "bob");
   });
   afterEach(async () => {
-    await alice.cleanup();
-    await bob.cleanup();
+    await Promise.allSettled([alice.cleanup(), bob.cleanup()]);
   });
 
   it("returns 401 when unauthenticated", async () => {
@@ -144,8 +142,12 @@ describe("PATCH /api/contacts/:id", () => {
     bob = await createTestUser(app, "bob");
   });
   afterEach(async () => {
-    await alice.cleanup();
-    await bob.cleanup();
+    await Promise.allSettled([alice.cleanup(), bob.cleanup()]);
+  });
+
+  it("returns 401 when unauthenticated", async () => {
+    const res = await request(app).patch("/api/contacts/some-id").send({ name: "X" });
+    expect(res.status).toBe(401);
   });
 
   it("updates the named fields and leaves others alone", async () => {
@@ -188,6 +190,14 @@ describe("PATCH /api/contacts/:id", () => {
     const fresh = await prisma.contact.findUnique({ where: { id: c.id } });
     expect(fresh?.name).toBe("Bob's friend");
   });
+
+  it("returns 404 when the id does not exist", async () => {
+    const res = await request(app)
+      .patch("/api/contacts/nonexistent-id")
+      .set("Cookie", alice.cookie)
+      .send({ name: "X" });
+    expect(res.status).toBe(404);
+  });
 });
 
 describe("DELETE /api/contacts/:id", () => {
@@ -198,8 +208,12 @@ describe("DELETE /api/contacts/:id", () => {
     bob = await createTestUser(app, "bob");
   });
   afterEach(async () => {
-    await alice.cleanup();
-    await bob.cleanup();
+    await Promise.allSettled([alice.cleanup(), bob.cleanup()]);
+  });
+
+  it("returns 401 when unauthenticated", async () => {
+    const res = await request(app).delete("/api/contacts/some-id");
+    expect(res.status).toBe(401);
   });
 
   it("deletes the contact when owned", async () => {
