@@ -1,0 +1,21 @@
+{
+  "name": "quorum-copilot-training",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Copilot/Claude Code training playground (contact-book domain)",
+  "scripts": {
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d postgres",
+    "dev": "concurrently -n be,fe -c blue,green \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "e2e": "playwright test",
+    "setup": "node scripts/setup.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "@playwright/test": "^1.48.0",
+    "prettier": "^3.3.0"
+  }
+}
