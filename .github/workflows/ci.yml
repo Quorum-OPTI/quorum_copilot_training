@@ -67,7 +67,7 @@ jobs:
           EOF
 
       - name: Run migrations
-        run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+        run: cd backend && npx prisma migrate deploy
 
       - name: Lint
         run: npm run lint
@@ -137,7 +137,7 @@ jobs:
           EOF
 
       - name: Run migrations
-        run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+        run: cd backend && npx prisma migrate deploy
 
       - name: Seed database
         run: npm --prefix backend run db:seed
