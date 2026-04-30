@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Pencil, Trash2 } from "lucide-react";
 import { ApiError, deleteContact, getContact } from "@/lib/api/contacts";
 import type { Contact } from "@/lib/contact-schemas";
+import { PageTitle } from "@/components/page-title";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function ContactDetail() {
   const { id } = useParams<{ id: string }>();
@@ -31,49 +34,38 @@ export default function ContactDetail() {
   }
 
   if (error) return <div className="p-8 text-destructive">{error}</div>;
-  if (contact === null) return <div className="p-8">Loading…</div>;
+  if (contact === null) return <div className="p-8 text-muted-foreground">Loading…</div>;
   if (contact === "not-found") {
     return (
-      <div className="mx-auto max-w-md p-8 space-y-4">
+      <div className="mx-auto max-w-md px-6 py-8 space-y-4">
         <p>Contact not found.</p>
-        <Link className="underline" to="/contacts">Back to contacts</Link>
+        <Link className="font-medium text-primary underline underline-offset-2" to="/contacts">
+          Back to contacts
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-md p-8 space-y-6">
-      <h1 className="text-2xl font-semibold">{contact.name}</h1>
-      <dl className="space-y-2">
+    <div className="mx-auto max-w-2xl px-6 py-8 space-y-6">
+      <Breadcrumbs items={[{ label: "Contacts", to: "/contacts" }, { label: contact.name }]} />
+      <PageTitle
+        title={contact.name}
+        actions={[
+          { label: "Edit", to: `/contacts/${contact.id}/edit`, icon: Pencil, variant: "outline" },
+          { label: "Delete", onClick: onDelete, icon: Trash2, variant: "destructive" },
+        ]}
+      />
+      <dl className="space-y-3">
         <div>
-          <dt className="text-sm text-muted-foreground">Email</dt>
-          <dd>{contact.email ?? "—"}</dd>
+          <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Email</dt>
+          <dd className="text-base">{contact.email ?? "—"}</dd>
         </div>
         <div>
-          <dt className="text-sm text-muted-foreground">Phone</dt>
-          <dd>{contact.phone ?? "—"}</dd>
+          <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Phone</dt>
+          <dd className="text-base">{contact.phone ?? "—"}</dd>
         </div>
       </dl>
-      <div className="flex gap-2">
-        <Link
-          to={`/contacts/${contact.id}/edit`}
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Edit
-        </Link>
-        <button
-          onClick={onDelete}
-          className="inline-flex items-center justify-center rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
-        >
-          Delete
-        </button>
-        <Link
-          to="/contacts"
-          className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-        >
-          Back
-        </Link>
-      </div>
     </div>
   );
 }

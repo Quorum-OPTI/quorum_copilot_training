@@ -36,9 +36,10 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-8">
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-8">
       <Card className="w-full max-w-sm">
-        <CardHeader>
+        <CardHeader className="items-center text-center">
+          <img src="/quorum-logo.svg" alt="Quorum" width={32} height={33} className="mb-2" />
           <CardTitle>Create account</CardTitle>
         </CardHeader>
         <CardContent>
@@ -88,7 +89,7 @@ export default function SignupPage() {
               </Button>
               <p className="text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <Link className="underline" to="/login">
+                <Link className="font-medium text-primary underline underline-offset-2" to="/login">
                   Log in
                 </Link>
               </p>

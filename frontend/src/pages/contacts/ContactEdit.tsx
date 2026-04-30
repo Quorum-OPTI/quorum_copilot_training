@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ContactForm } from "./ContactForm";
 import { ApiError, getContact, updateContact } from "@/lib/api/contacts";
 import type { Contact, CreateContactInput } from "@/lib/contact-schemas";
+import { PageTitle } from "@/components/page-title";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function ContactEdit() {
   const { id } = useParams<{ id: string }>();
@@ -37,14 +39,21 @@ export default function ContactEdit() {
     return (
       <div className="mx-auto max-w-md p-8 space-y-4">
         <p>Contact not found.</p>
-        <Link className="underline" to="/contacts">Back to contacts</Link>
+        <Link className="font-medium text-primary underline underline-offset-2" to="/contacts">Back to contacts</Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-md p-8 space-y-6">
-      <h1 className="text-2xl font-semibold">Edit contact</h1>
+    <div className="mx-auto max-w-md px-6 py-8 space-y-6">
+      <Breadcrumbs
+        items={[
+          { label: "Contacts", to: "/contacts" },
+          { label: contact.name, to: `/contacts/${contact.id}` },
+          { label: "Edit" },
+        ]}
+      />
+      <PageTitle title="Edit contact" />
       <ContactForm
         initialValues={{
           name: contact.name,
