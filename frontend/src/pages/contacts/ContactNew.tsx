@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ContactForm } from "./ContactForm";
 import { createContact } from "@/lib/api/contacts";
 import type { CreateContactInput } from "@/lib/contact-schemas";
+import { PageTitle } from "@/components/page-title";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function ContactNew() {
   const navigate = useNavigate();
@@ -19,8 +21,9 @@ export default function ContactNew() {
   }
 
   return (
-    <div className="mx-auto max-w-md p-8 space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">New contact</h1>
+    <div className="mx-auto max-w-md px-6 py-8 space-y-6">
+      <Breadcrumbs items={[{ label: "Contacts", to: "/contacts" }, { label: "New" }]} />
+      <PageTitle title="New contact" />
       <ContactForm onSubmit={onSubmit} submitLabel="Create" serverError={serverError} />
     </div>
   );

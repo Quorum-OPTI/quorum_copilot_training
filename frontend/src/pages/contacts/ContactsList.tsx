@@ -5,6 +5,7 @@ import { listContacts } from "@/lib/api/contacts";
 import type { Contact } from "@/lib/contact-schemas";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { PageTitle } from "@/components/page-title";
 
 export function ContactsList() {
   const [contacts, setContacts] = useState<Contact[] | null>(null);
@@ -28,16 +29,10 @@ export function ContactsList() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>
-        <Link
-          to="/contacts/new"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <Plus className="mr-2 h-4 w-4" aria-hidden />
-          New contact
-        </Link>
-      </div>
+      <PageTitle
+        title="Contacts"
+        actions={[{ label: "New contact", to: "/contacts/new", icon: Plus }]}
+      />
 
       {contacts.length === 0 ? (
         <Card className="p-12 text-center">
