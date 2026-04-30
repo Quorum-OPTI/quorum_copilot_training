@@ -104,6 +104,7 @@ jobs:
   checks:
     name: Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -162,10 +163,10 @@ jobs:
         run: npm run lint
 
       - name: Typecheck (backend)
-        run: npm --prefix backend exec -- tsc --noEmit
+        run: cd backend && npx tsc --noEmit
 
       - name: Typecheck (frontend)
-        run: npm --prefix frontend exec -- tsc -b --noEmit
+        run: cd frontend && npx tsc --noEmit
 
       - name: Unit tests
         run: npm test
@@ -198,10 +199,14 @@ The same commands the workflow runs should pass on your machine. `npm test` requ
 ```bash
 npm run db:up
 npm run lint
-npm --prefix backend exec -- tsc --noEmit
-npm --prefix frontend exec -- tsc -b --noEmit
+(cd backend && npx tsc --noEmit)
+(cd frontend && npx tsc --noEmit)
 npm test
 ```
+
+> **Why `cd` + `npx` instead of `npm --prefix X exec`:** `npm exec --prefix X` resolves the binary from `X/node_modules/.bin/` but does NOT change the working directory. `tsc` reads `tsconfig.json` from the current working directory, so without `cd` it finds no config and silently exits 0. We need `cd backend && npx tsc --noEmit` for the typecheck to actually run.
+
+> **Why frontend uses `tsc --noEmit` and not `tsc -b --noEmit`:** the frontend has composite project refs (`tsconfig.node.json` is referenced with `composite: true`). When the parent `tsconfig.json` sets `noEmit: true`, `tsc -b` errors with TS6310 ("referenced project may not disable emit"). Plain `tsc --noEmit` typechecks the whole graph without the composite-build constraint.
 
 Expected: all exit 0. If anything fails locally, it will fail in CI — fix it before continuing (or open a separate issue).
 
@@ -233,6 +238,7 @@ jobs:
   e2e:
     name: E2E
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     services:
       postgres:
