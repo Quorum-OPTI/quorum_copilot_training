@@ -31,6 +31,13 @@ jobs:
           --health-timeout 2s
           --health-retries 20
 
+    env:
+      DATABASE_URL: postgresql://copilot:copilot@localhost:5432/copilot_training
+      BETTER_AUTH_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      BETTER_AUTH_URL: http://localhost:3000
+      PORT: "3000"
+      FRONTEND_ORIGIN: http://localhost:5173
+
     steps:
       - uses: actions/checkout@v4
 
@@ -55,16 +62,6 @@ jobs:
 
       - name: Generate Prisma client
         run: npm --prefix backend run prisma:generate
-
-      - name: Write backend/.env for CI
-        run: |
-          cat > backend/.env <<'EOF'
-          DATABASE_URL="postgresql://copilot:copilot@localhost:5432/copilot_training"
-          BETTER_AUTH_SECRET="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-          BETTER_AUTH_URL="http://localhost:3000"
-          PORT=3000
-          FRONTEND_ORIGIN="http://localhost:5173"
-          EOF
 
       - name: Run migrations
         run: cd backend && npx prisma migrate deploy
@@ -101,6 +98,13 @@ jobs:
           --health-timeout 2s
           --health-retries 20
 
+    env:
+      DATABASE_URL: postgresql://copilot:copilot@localhost:5432/copilot_training
+      BETTER_AUTH_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      BETTER_AUTH_URL: http://localhost:3000
+      PORT: "3000"
+      FRONTEND_ORIGIN: http://localhost:5173
+
     steps:
       - uses: actions/checkout@v4
 
@@ -125,16 +129,6 @@ jobs:
 
       - name: Generate Prisma client
         run: npm --prefix backend run prisma:generate
-
-      - name: Write backend/.env for CI
-        run: |
-          cat > backend/.env <<'EOF'
-          DATABASE_URL="postgresql://copilot:copilot@localhost:5432/copilot_training"
-          BETTER_AUTH_SECRET="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-          BETTER_AUTH_URL="http://localhost:3000"
-          PORT=3000
-          FRONTEND_ORIGIN="http://localhost:5173"
-          EOF
 
       - name: Run migrations
         run: cd backend && npx prisma migrate deploy
