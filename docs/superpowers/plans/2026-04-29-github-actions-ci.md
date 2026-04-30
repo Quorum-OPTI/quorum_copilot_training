@@ -22,7 +22,7 @@
 
 ## File Structure
 
-This plan creates exactly one new file:
+This plan creates one new file:
 
 ```
 .github/
@@ -30,7 +30,15 @@ This plan creates exactly one new file:
     └── ci.yml
 ```
 
-No existing files are modified. `docker-compose.yml`, `playwright.config.ts`, `package.json`, and `backend/.env.example` are reused as-is.
+### Files modified during implementation (not in original scope)
+
+These were uncovered when wiring up the CI checks and were necessary for the workflow to be useful:
+
+- `backend/tsconfig.json` — narrowed `include` to `["src/**/*"]` so the production build emits flat to `dist/`. The previous broad include caused emit paths to nest under `dist/src/`, breaking `npm start`.
+- `backend/src/routes/contacts.ts` — added `as string` assertions on `req.params["id"]` to satisfy Express 5's wider param type under `noUncheckedIndexedAccess: true`.
+- `playwright.config.ts` — added the HTML reporter under `CI=true` so the `playwright-report/` artifact uploaded on failure actually has content.
+
+Unchanged: `docker-compose.yml`, root `package.json`, and `backend/.env.example`.
 
 ---
 

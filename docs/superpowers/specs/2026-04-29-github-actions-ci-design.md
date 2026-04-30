@@ -127,7 +127,11 @@ Steps:
 ## File changes
 
 - **New:** `.github/workflows/ci.yml` — the workflow file described above.
-- No changes to existing files. `docker-compose.yml`, `playwright.config.ts`, and the `package.json` scripts are reused as-is.
+- **Modified during implementation** (uncovered by adding `tsc --noEmit` to CI):
+  - `backend/tsconfig.json` — narrowed `include` to `["src/**/*"]` so the build emits to `dist/index.js` (was breaking with the previous broad include).
+  - `backend/src/routes/contacts.ts` — added `as string` assertions on `req.params["id"]` for Express 5 typing under `noUncheckedIndexedAccess`.
+  - `playwright.config.ts` — enabled HTML reporter under `CI=true` so the `playwright-report` artifact has content on failures.
+- Unchanged: `docker-compose.yml`, the `package.json` scripts, and `backend/.env.example`.
 
 ## Branch and PR
 
