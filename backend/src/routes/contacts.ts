@@ -33,8 +33,9 @@ contactsRouter.post("/", async (req: AuthedRequest, res) => {
 });
 
 contactsRouter.get("/:id", async (req: AuthedRequest, res) => {
+  const id = req.params["id"] as string;
   const contact = await prisma.contact.findFirst({
-    where: { id: req.params.id, userId: req.user!.id },
+    where: { id, userId: req.user!.id },
   });
   if (!contact) {
     res.status(404).json({ error: "NotFound" });
@@ -44,13 +45,14 @@ contactsRouter.get("/:id", async (req: AuthedRequest, res) => {
 });
 
 contactsRouter.patch("/:id", async (req: AuthedRequest, res) => {
+  const id = req.params["id"] as string;
   const parsed = updateContactSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", issues: parsed.error.issues });
     return;
   }
   const result = await prisma.contact.updateMany({
-    where: { id: req.params.id, userId: req.user!.id },
+    where: { id, userId: req.user!.id },
     data: {
       ...(parsed.data.name !== undefined && { name: parsed.data.name }),
       ...(parsed.data.email !== undefined && { email: parsed.data.email ?? null }),
@@ -62,7 +64,7 @@ contactsRouter.patch("/:id", async (req: AuthedRequest, res) => {
     return;
   }
   const contact = await prisma.contact.findFirst({
-    where: { id: req.params.id, userId: req.user!.id },
+    where: { id, userId: req.user!.id },
   });
   if (!contact) {
     res.status(404).json({ error: "NotFound" });
@@ -72,8 +74,9 @@ contactsRouter.patch("/:id", async (req: AuthedRequest, res) => {
 });
 
 contactsRouter.delete("/:id", async (req: AuthedRequest, res) => {
+  const id = req.params["id"] as string;
   const result = await prisma.contact.deleteMany({
-    where: { id: req.params.id, userId: req.user!.id },
+    where: { id, userId: req.user!.id },
   });
   if (result.count === 0) {
     res.status(404).json({ error: "NotFound" });
