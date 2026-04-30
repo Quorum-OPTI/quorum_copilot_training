@@ -80,3 +80,64 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: copilot
+          POSTGRES_PASSWORD: copilot
+          POSTGRES_DB: copilot_training
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U copilot -d copilot_training"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install root deps
+        run: npm ci
+
+      - name: Install backend deps
+        run: npm ci --prefix backend
+
+      - name: Install frontend deps
+        run: npm ci --prefix frontend
+
+      - name: Write backend/.env for CI
+        run: |
+          cat > backend/.env <<'EOF'
+          DATABASE_URL="postgresql://copilot:copilot@localhost:5432/copilot_training"
+          BETTER_AUTH_SECRET="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+          BETTER_AUTH_URL="http://localhost:3000"
+          PORT=3000
+          FRONTEND_ORIGIN="http://localhost:5173"
+          EOF
+
+      - name: Generate Prisma client
+        run: npm --prefix backend run prisma:generate
+
+      - name: Run migrations
+        run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+
+      - name: Seed database
+        run: npm --prefix backend run db:seed
