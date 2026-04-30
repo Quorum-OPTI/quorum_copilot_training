@@ -62,8 +62,10 @@ Steps:
 6. Apply migrations: `npx prisma migrate deploy --schema backend/prisma/schema.prisma`.
 7. Lint: `npm run lint`.
 8. Typecheck:
-   - Backend: `npm --prefix backend exec -- tsc --noEmit`
-   - Frontend: `npm --prefix frontend exec -- tsc -b --noEmit`
+   - Backend: `cd backend && npx tsc --noEmit`
+   - Frontend: `cd frontend && npx tsc --noEmit`
+
+   We use `cd` + `npx` rather than `npm --prefix X exec --` because `tsc` reads `tsconfig.json` from the current working directory; `npm exec --prefix` does not change cwd, so the typecheck would silently no-op. The frontend uses `tsc --noEmit` (not `tsc -b --noEmit`) because `tsc -b` errors with TS6310 when the parent project sets `noEmit: true`.
 9. Unit tests: `npm test`.
 
 The backend Vitest tests create and tear down their own users per test (see `tests/helpers/auth.ts`), so a one-time seed isn't required for `checks` — `migrate deploy` is enough.
