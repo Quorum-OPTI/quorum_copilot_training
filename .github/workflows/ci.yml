@@ -73,10 +73,10 @@ jobs:
         run: npm run lint
 
       - name: Typecheck (backend)
-        run: npm --prefix backend exec -- tsc --noEmit
+        run: cd backend && npx tsc --noEmit
 
       - name: Typecheck (frontend)
-        run: npm --prefix frontend exec -- tsc --noEmit
+        run: cd frontend && npx tsc --noEmit
 
       - name: Unit tests
         run: npm test
