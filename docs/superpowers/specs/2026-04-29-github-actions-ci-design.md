@@ -41,9 +41,13 @@ concurrency:
 
 The workflow defines two independent jobs that run in parallel. Splitting them means lint failures don't wait behind a slower browser run, and developers see the fast signal first.
 
-### Job 1 — `checks` (fast lane)
+### Job 1 — `checks` (lint + typecheck + Vitest)
 
-Runs lint + typecheck + Vitest on both backend and frontend. Target runtime: ~1–2 minutes.
+Runs lint + typecheck + Vitest on both backend and frontend. Target runtime: ~2–3 minutes.
+
+**Postgres needed:** the backend Vitest suite (`backend/tests/contacts.test.ts`, `me.test.ts`) is an integration suite that hits Postgres via Prisma — `tests/setup.ts` sets a default `DATABASE_URL` pointing at `localhost:5432`. So this job also needs the service container, migrations, and seed.
+
+Postgres service container: same definition as Job 2 (see below).
 
 Steps:
 
@@ -54,17 +58,21 @@ Steps:
    - `npm ci --prefix backend`
    - `npm ci --prefix frontend`
 4. Generate the Prisma client: `npm --prefix backend run prisma:generate`. The backend's typecheck imports types from `@prisma/client`, so this must run before typecheck.
-5. Lint: `npm run lint` (the root script that runs both `backend` and `frontend` ESLint).
-6. Typecheck:
+5. Write a CI `backend/.env` (same content as Job 2 — see below).
+6. Apply migrations: `npx prisma migrate deploy --schema backend/prisma/schema.prisma`.
+7. Lint: `npm run lint`.
+8. Typecheck:
    - Backend: `npm --prefix backend exec -- tsc --noEmit`
-   - Frontend: `npm --prefix frontend exec -- tsc -b --noEmit` (matches the `tsc -b && vite build` pattern in `frontend/package.json`)
-7. Unit tests: `npm test` (root script — runs Vitest in both packages).
+   - Frontend: `npm --prefix frontend exec -- tsc -b --noEmit`
+9. Unit tests: `npm test`.
+
+The backend Vitest tests create and tear down their own users per test (see `tests/helpers/auth.ts`), so a one-time seed isn't required for `checks` — `migrate deploy` is enough.
 
 ### Job 2 — `e2e` (Playwright)
 
-Runs in parallel with `checks`. Brings up a Postgres service container, applies migrations, seeds demo data, then runs the Playwright suite.
+Runs in parallel with `checks`. Brings up its **own** Postgres service container (each job gets a separate runner, so they don't share state — that's fine; ephemeral DBs are cheap). Applies migrations, seeds demo data, then runs the Playwright suite.
 
-Postgres service container (matches `docker-compose.yml` env so the seed and migrations behave the same as local):
+Postgres service container (matches `docker-compose.yml` env so seed and migrations behave the same as local):
 
 ```yaml
 services:
