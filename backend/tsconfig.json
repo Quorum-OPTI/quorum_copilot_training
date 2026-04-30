@@ -15,5 +15,5 @@
     "declaration": false,
     "sourceMap": true
   },
-  "include": ["src/**/*", "prisma/**/*", "tests/**/*"]
+  "include": ["src/**/*"]
 }

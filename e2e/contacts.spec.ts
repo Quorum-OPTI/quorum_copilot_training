@@ -15,9 +15,8 @@ async function signUpFresh(page: import("@playwright/test").Page, label: string)
 test("contacts CRUD happy path", async ({ page }) => {
   await signUpFresh(page, "crud");
 
-  // Visit contacts: empty state
-  await page.getByRole("link", { name: /go to contacts/i }).click();
-  await expect(page).toHaveURL("/contacts");
+  // Signup lands on "/", which is the contacts list — empty state
+  await expect(page.getByRole("heading", { name: "Contacts" })).toBeVisible();
   await expect(page.getByText(/no contacts yet/i)).toBeVisible();
 
   // Create

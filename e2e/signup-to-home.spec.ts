@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("signup → land on home with welcome", async ({ page }) => {
+test("signup → land on home (contacts list)", async ({ page }) => {
   const unique = Date.now();
   const email = `e2e-${unique}@example.com`;
 
@@ -11,5 +11,6 @@ test("signup → land on home with welcome", async ({ page }) => {
   await page.getByRole("button", { name: /sign up/i }).click();
 
   await expect(page).toHaveURL("/");
-  await expect(page.getByRole("heading")).toContainText(`Welcome, E2E User ${unique}`);
+  await expect(page.getByRole("heading", { name: "Contacts" })).toBeVisible();
+  await expect(page.getByText(/no contacts yet/i)).toBeVisible();
 });
