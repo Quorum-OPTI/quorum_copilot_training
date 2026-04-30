@@ -277,6 +277,9 @@ jobs:
       - name: Install frontend deps
         run: npm ci --prefix frontend
 
+      - name: Generate Prisma client
+        run: npm --prefix backend run prisma:generate
+
       - name: Write backend/.env for CI
         run: |
           cat > backend/.env <<'EOF'
@@ -286,9 +289,6 @@ jobs:
           PORT=3000
           FRONTEND_ORIGIN="http://localhost:5173"
           EOF
-
-      - name: Generate Prisma client
-        run: npm --prefix backend run prisma:generate
 
       - name: Run migrations
         run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
